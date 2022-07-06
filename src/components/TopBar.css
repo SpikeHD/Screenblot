@@ -1,8 +1,21 @@
 .TopBar {
-  height: 36px;
+  height: 26px;
+  margin: 12px;
 }
 
-#ButtonMenu {
+.TopBar {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
 }
 
+.TopBar div {
+  padding-left: 6px;
+}
+
+.TopBar svg {
+  width: 30px;
+  height: 30px;
+  margin-right: 5px;
+}

@@ -1,6 +1,7 @@
 import { Component } from 'preact';
 
-import Close from '../icons/close.svg';
+import Camera from '../icons/camera.svg';
+
 import './TopBar.css';
 
 export default class Topbar extends Component {
@@ -11,12 +12,8 @@ export default class Topbar extends Component {
   render() {
     return (
       <div className="TopBar">
-        <div id="AppName">
-          ScreenBlot
-        </div>
-
-        <div id="ButtonMenu">
-          <Close />
+        <div id="CaptureButton">
+          <Camera />
         </div>
       </div>
     )
