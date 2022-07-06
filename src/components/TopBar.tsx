@@ -9,10 +9,14 @@ export default class Topbar extends Component {
     super()
   }
 
+  handleBeginCapture() {
+    console.log('begin capture');
+  }
+
   render() {
     return (
       <div className="TopBar">
-        <div id="CaptureButton">
+        <div id="CaptureButton" onClick={this.handleBeginCapture}>
           <Camera />
         </div>
       </div>
