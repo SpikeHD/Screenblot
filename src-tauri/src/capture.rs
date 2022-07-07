@@ -41,10 +41,33 @@ fn capture_screenshot() {
     WindowOptions::default()
   ).unwrap();
 
-  while window.is_open() && !window.is_key_down(Key::Escape) {
+  let mut captured = false;
+  let mut has_clicked_down = false;
+  let mut starting_pos = (0, 0);
+  let mut ending_pos = (0, 0);
+
+  while window.is_open() && !window.is_key_down(Key::Escape) && !captured {
     // Write the image to the window
     window.update_with_buffer(&u32_buffer, width, height).unwrap();
+
+    // Check if mouse is pressed
+    let clickingDown = window.get_mouse_down(minifb::MouseButton::Left);
+
+    if (clickingDown && !has_clicked_down) {
+      has_clicked_down = true;
+      starting_pos.0 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i32;
+      starting_pos.1 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i32;
+    }
+
+    if (!clickingDown && has_clicked_down) {
+      ending_pos.0 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().0 as i32;
+      ending_pos.1 = window.get_mouse_pos(minifb::MouseMode::Clamp).unwrap().1 as i32;
+      captured = true;
+    }
   }
+
+  println!("starting x: {} y: {}", starting_pos.0, starting_pos.1);
+  println!("ending x: {} y: {}", ending_pos.0, ending_pos.1);
 }
 
 #[tauri::command]
