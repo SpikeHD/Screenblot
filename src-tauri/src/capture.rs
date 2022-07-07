@@ -6,7 +6,7 @@ use tauri;
 use screenshots::Screen;
 // use minifb::{Key, Window, WindowOptions};
 
-fn capture_screenshot() {
+fn capture_screenshot(path: String) -> String {
   // All screens
   let scrns = Screen::all();
 
@@ -20,12 +20,22 @@ fn capture_screenshot() {
   let mut rng = rand::thread_rng();
   let num: u32 = rng.gen();
 
+  // Create path if it doesn't exist
+  fs::create_dir_all(path).unwrap();
+
   let filename = format!("{}.png", num);
-  let path = format!(".cache/{}", filename);
+  let path = format!("{}/{}", path, filename);
   fs::write(path, image.buffer());
+
+  return filename;
 }
 
 #[tauri::command]
-pub fn take_screenshot() {
-  capture_screenshot();
+pub fn take_screenshot(window: tauri::Window, path: String) {
+  // Run in new thread to avoid blocking, emit screenshot event when done
+  std::thread::spawn(move || {
+    window.emit("begin_screenshot", "");
+    let filename = capture_screenshot(path);
+    window.emit("finish_screenshot", filename);
+  });
 }

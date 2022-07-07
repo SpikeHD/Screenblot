@@ -12,7 +12,22 @@
   },
   "tauri": {
     "allowlist": {
-      "all": true
+      "fs": {
+        "scope": [
+          "$DATA",
+          "$DATA/ScreenBlot",
+          "$DATA/ScreenBlot/*"
+        ]
+      },
+      "protocol": {
+        "all": true,
+        "asset": true,
+        "assetScope": [
+          "$DATA",
+          "$DATA/ScreenBlot",
+          "$DATA/ScreenBlot/*"
+        ]
+      }
     },
     "bundle": {
       "active": true,
