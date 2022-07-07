@@ -11,7 +11,7 @@ Download release builds and installers [here!](https://github.com/SpikeHD/Screen
 ## Prerequisites
 
 * [NodeJS](https://nodejs.org/)
-* [Rust & Cargp](https://www.rust-lang.org/tools/install)
+* [Rust & Cargo](https://www.rust-lang.org/tools/install)
 
 ## Running
 
@@ -25,4 +25,4 @@ Download release builds and installers [here!](https://github.com/SpikeHD/Screen
 
 Issues, PRs, etc. are all welcome!
 
-**Icons Courtesy of [iconpacks.net](https://www.iconpacks.net/)
+**Icons Courtesy of [iconpacks.net](https://www.iconpacks.net/)**
