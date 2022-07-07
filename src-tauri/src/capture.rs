@@ -21,10 +21,10 @@ fn capture_screenshot(path: String) -> String {
   let num: u32 = rng.gen();
 
   // Create path if it doesn't exist
-  fs::create_dir_all(path).unwrap();
+  fs::create_dir_all(&path).unwrap();
 
   let filename = format!("{}.png", num);
-  let path = format!("{}/{}", path, filename);
+  let path = format!("{}/{}", &path, filename);
   fs::write(path, image.buffer());
 
   return filename;
@@ -34,8 +34,8 @@ fn capture_screenshot(path: String) -> String {
 pub fn take_screenshot(window: tauri::Window, path: String) {
   // Run in new thread to avoid blocking, emit screenshot event when done
   std::thread::spawn(move || {
-    window.emit("begin_screenshot", "");
+    window.emit("begin_screenshot", "").unwrap();
     let filename = capture_screenshot(path);
-    window.emit("finish_screenshot", filename);
+    window.emit("finish_screenshot", filename).unwrap();
   });
 }

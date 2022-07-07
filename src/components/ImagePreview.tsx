@@ -1,5 +1,6 @@
 import { listen } from '@tauri-apps/api/event'
 import { dataDir } from '@tauri-apps/api/path';
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact'
 import './ImagePreview.css'
@@ -29,7 +30,7 @@ export default class ImagePreview extends Component {
       const dir = (await dataDir()) + '/.cache/'
 
       this.setState({
-        image: payload,
+        image: convertFileSrc(payload as string),
         loading: false,
         error: null,
       })

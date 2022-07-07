@@ -27,7 +27,8 @@
           "$DATA/ScreenBlot",
           "$DATA/ScreenBlot/*"
         ]
-      }
+      },
+      "all": true
     },
     "bundle": {
       "active": true,
