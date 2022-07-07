@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use tauri;
 
 use screenshots::Screen;
@@ -12,12 +14,24 @@ fn capture_screenshot() {
 
   // Capture entire screen
   let image = screen.capture().unwrap();
-  let image_buf = image.buffer();
+
+  // Convert the buffer to a decoded PNG
+  let image_decode = png::Decoder::new(std::io::BufReader::new(image.buffer().as_ref() as &[u8]));
+  let mut reader = image_decode.read_info().unwrap();
+
+  // Create a buffer based on the decoded PNG
+  let mut buf = vec![0; reader.output_buffer_size()];
+
+  // Read the next frame
+  reader.next_frame(&mut buf).unwrap();
 
   let width = image.width() as usize;
   let height = image.height() as usize;
 
-  let mut buf: Vec<u32> = vec![0; width * height];
+  let u32_buffer: Vec<u32> = buf
+    .chunks(4)
+    .map(|v| ((v[0] as u32) << 16) | ((v[1] as u32) << 8) | v[2] as u32)
+    .collect();
 
   // Create a window
   let mut window = Window::new(
@@ -28,13 +42,8 @@ fn capture_screenshot() {
   ).unwrap();
 
   while window.is_open() && !window.is_key_down(Key::Escape) {
-    // Convert image_buf (3 elements per pixel) to buf (1 element per pixel)
-    for i in 0..image_buf.len() {
-      buf[i] = image_buf[i * 3] << 16 | image_buf[i * 3 + 1] << 8 | image_buf[i * 3 + 2] | 255;
-    }
-
     // Write the image to the window
-    window.update_with_buffer(&pixels, width, height).unwrap();
+    window.update_with_buffer(&u32_buffer, width, height).unwrap();
   }
 }
 

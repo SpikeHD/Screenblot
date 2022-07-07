@@ -3,9 +3,13 @@
   windows_subsystem = "windows"
 )]
 
+use std::fs;
+
 mod capture;
 
 fn main() {
+  init_dirs();
+
   let context = tauri::generate_context!();
   tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![
@@ -18,4 +22,9 @@ fn main() {
     })
     .run(context)
     .expect("error while running tauri application");
+}
+
+fn init_dirs() {
+  // Create a folder named .cache
+  let mut cache_dir = fs::create_dir_all(".cache").unwrap();
 }
