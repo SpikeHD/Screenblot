@@ -1,9 +1,10 @@
 import { invoke } from '@tauri-apps/api';
-import { dataDir } from '@tauri-apps/api/path';
 import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact';
 
 import Camera from '../icons/camera.svg';
+import { getCacheDir } from '../util/cache';
+import ImagePreview from './ImagePreview';
 
 import './TopBar.css';
 
@@ -15,9 +16,8 @@ export default class Topbar extends Component {
   async handleBeginCapture() {
     await appWindow.minimize();
 
-    //invoke('beginCapture');
     invoke('take_screenshot', {
-      path: (await dataDir()) + '/.cache/'
+      path: await getCacheDir(),
     });
   }
 

@@ -7,6 +7,8 @@ use screenshots::Screen;
 // use minifb::{Key, Window, WindowOptions};
 
 fn capture_screenshot(path: String) -> String {
+  let mut path_buf = std::path::PathBuf::from(&path);
+
   // All screens
   let scrns = Screen::all();
 
@@ -21,11 +23,16 @@ fn capture_screenshot(path: String) -> String {
   let num: u32 = rng.gen();
 
   // Create path if it doesn't exist
-  fs::create_dir_all(&path).unwrap();
+  if fs::metadata(&path_buf).is_err() {
+    fs::create_dir_all(&path_buf).unwrap();
+  }
 
   let filename = format!("{}.png", num);
-  let path = format!("{}/{}", &path, filename);
-  fs::write(path, image.buffer());
+  
+  // Push filename to path buffer
+  path_buf.push(&filename);
+
+  fs::write(&path_buf, image.buffer());
 
   return filename;
 }

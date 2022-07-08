@@ -1,13 +1,20 @@
 import { listen } from '@tauri-apps/api/event'
-import { dataDir } from '@tauri-apps/api/path';
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact'
+import { getCacheDir } from '../util/cache';
 import './ImagePreview.css'
 
-export default class ImagePreview extends Component {
+interface IState {
+  image: string | null
+  loading: boolean
+  error: null
+}
+
+export default class ImagePreview extends Component<{}, IState> {
   constructor() {
     super()
+
     this.state = {
       image: null,
       loading: false,
@@ -27,10 +34,10 @@ export default class ImagePreview extends Component {
 
     // Watch for screenshot events
     listen('finish_screenshot', async ({ payload }) => {
-      const dir = (await dataDir()) + '/.cache/'
+      const dir = await getCacheDir()
 
       this.setState({
-        image: convertFileSrc(payload as string),
+        image: convertFileSrc(dir + payload as string),
         loading: false,
         error: null,
       })
@@ -40,7 +47,16 @@ export default class ImagePreview extends Component {
   render() {
     return (
       <div className="ImagePreview">
-
+        {
+          this.state.loading ?
+            <div>Loading...</div>
+            
+            : this.state.image ?
+            
+            <div id="ImageContainer">
+              <img src={this.state.image || ''} />
+            </div> : null
+        }
       </div>
     )
   }
