@@ -1,8 +1,10 @@
+import { window } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event'
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact'
 import { getCacheDir } from '../util/cache';
+import ImageCropHandler from './ImageCropHandler';
 import './ImagePreview.css'
 
 interface IState {
@@ -27,9 +29,6 @@ export default class ImagePreview extends Component<{}, IState> {
         loading: true,
         error: null,
       })
-
-      // Maximize
-      appWindow.setFocus()
     })
 
     // Watch for screenshot events
@@ -41,7 +40,31 @@ export default class ImagePreview extends Component<{}, IState> {
         loading: false,
         error: null,
       })
+
+      // Bring into foreground
+      await appWindow.unminimize();
+      await appWindow.setFocus();
+
+      await this.setWindowAndImageSize();
     })
+  }
+
+  async setWindowAndImageSize() {
+    const winSize = (await window.currentMonitor())?.size
+
+    console.log(winSize)
+
+    if (winSize) {
+      // Reduce the size we are about to set the window
+      const x = winSize.width / 1.2
+      const y = winSize.height / 1.2
+
+      // Set the window size
+      await appWindow.setSize(new window.LogicalSize(x, y)).catch(e => console.log(e));
+
+      // Center window
+      await appWindow.center().catch(e => console.log(e));
+    }
   }
 
   render() {
@@ -50,12 +73,8 @@ export default class ImagePreview extends Component<{}, IState> {
         {
           this.state.loading ?
             <div>Loading...</div>
-            
             : this.state.image ?
-            
-            <div id="ImageContainer">
-              <img src={this.state.image || ''} />
-            </div> : null
+              <ImageCropHandler image={this.state.image} /> : null
         }
       </div>
     )

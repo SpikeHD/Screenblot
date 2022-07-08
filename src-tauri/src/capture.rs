@@ -42,6 +42,10 @@ pub fn take_screenshot(window: tauri::Window, path: String) {
   // Run in new thread to avoid blocking, emit screenshot event when done
   std::thread::spawn(move || {
     window.emit("begin_screenshot", "").unwrap();
+
+    // Wait a fraction of a second to allow minimization to complete
+    std::thread::sleep(std::time::Duration::from_millis(600));
+
     let filename = capture_screenshot(path);
     window.emit("finish_screenshot", filename).unwrap();
   });
