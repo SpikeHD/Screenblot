@@ -91,10 +91,15 @@ export default class ImageCropHandler extends Component<IProps, IState> {
         },
       }, () => console.log(this.state))
 
-      // Delete any DragSelections
+      // Flash the selection element background for 0.1 seconds, then remove
       const div = document.getElementById('DragSelection')
       if (div) {
-        div.remove()
+        // Set background color to white and then fade out
+        div.style.backgroundColor = 'rgba(255, 255, 255, 0.5)'
+        div.style.transition = 'background-color 0.1s'
+        setTimeout(() => {
+          div.remove()
+        }, 100)
       }
     }
 
@@ -108,8 +113,8 @@ export default class ImageCropHandler extends Component<IProps, IState> {
         const rect = e.target.getBoundingClientRect()
   
         // Draw rect based on start and current mouse pos, taking rect into account
-        div.style.left = `${this.state.selection.start.x + rect.left - 6}px`
-        div.style.top = `${this.state.selection.start.y + rect.top - 6}px`
+        div.style.left = `${this.state.selection.start.x + rect.left - 4}px`
+        div.style.top = `${this.state.selection.start.y + rect.top - 4}px`
         div.style.width = `${e.clientX - rect.left - this.state.selection.start.x}px`
         div.style.height = `${e.clientY - rect.top - this.state.selection.start.y}px`
       }
