@@ -2,3 +2,7 @@
   border: 1px solid #686b73;
   background-color: rgba(238, 238, 238, 0.2);
 }
+
+.ImagePreview img.loading {
+  filter: blur(3px) brightness(80%);
+}

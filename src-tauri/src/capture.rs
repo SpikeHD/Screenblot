@@ -52,7 +52,7 @@ pub fn take_screenshot(window: tauri::Window, path: String) {
 }
 
 #[tauri::command]
-pub fn save_crop(path: String, image_name: String, x: i32, y: i32, width: i32, height: i32) {
+pub fn save_crop(path: String, image_name: String, x: i32, y: i32, width: i32, height: i32) -> String {
   let mut path_buf = std::path::PathBuf::from(&path);
 
   // Create path if it doesn't exist
@@ -72,7 +72,7 @@ pub fn save_crop(path: String, image_name: String, x: i32, y: i32, width: i32, h
     Ok(image) => image,
     Err(e) => {
       println!("{}", e);
-      return;
+      return "".to_string();
     }
   };
 
@@ -88,4 +88,7 @@ pub fn save_crop(path: String, image_name: String, x: i32, y: i32, width: i32, h
   println!("Writing new image to : {}", path_buf.to_str().unwrap());
 
   image::save_buffer(path_buf, cropped_buffer, width as u32, height as u32, image::ColorType::Rgba8).unwrap();
+
+  // Return new image name
+  return new_filename;
 }

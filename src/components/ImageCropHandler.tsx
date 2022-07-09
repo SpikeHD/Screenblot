@@ -2,6 +2,7 @@ import { invoke } from '@tauri-apps/api'
 import { cacheDir } from '@tauri-apps/api/path'
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { Component } from 'preact'
+import { getCacheDir } from '../util/cache';
 
 import './ImageCropHandler.css'
 
@@ -21,11 +22,14 @@ interface IState {
       y: number
     }
   }
+  cropLoading: boolean
+  image: string
+  image_history: string[]
 }
 
 export default class ImageCropHandler extends Component<IProps, IState> {
-  constructor() {
-    super()
+  constructor(props: IProps) {
+    super(props)
 
     this.state = {
       dragging: false,
@@ -38,7 +42,10 @@ export default class ImageCropHandler extends Component<IProps, IState> {
           x: 0,
           y: 0,
         },
-      }
+      },
+      cropLoading: false,
+      image: props.image,
+      image_history: [],
     }
 
     // Create some drag-selection event handlers
@@ -129,7 +136,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
 
   async saveImageInSelection() {
     const { start, end } = this.state.selection
-    const { image } = this.props
+    const { image } = this.state
 
     // Get img element calculated size and actual size to get ratio
     const img = document.querySelector('.ImagePreview img') as HTMLImageElement
@@ -155,7 +162,12 @@ export default class ImageCropHandler extends Component<IProps, IState> {
     const selectionStartX = start.x * ratio.x
     const selectionStartY = start.y * ratio.y
 
-    await invoke('save_crop', {
+    // Set img to loading
+    this.setState({
+      cropLoading: true,
+    })
+
+    const newImg = await invoke('save_crop', {
       path: await cacheDir(),
       imageName: image, 
       x: Math.round(selectionStartX),
@@ -164,12 +176,16 @@ export default class ImageCropHandler extends Component<IProps, IState> {
       height: Math.round(selectionHeight),
     })
 
-    console.log('Saved crop!')
+    this.setState({
+      cropLoading: false,
+      image: newImg as string !== '' ? (await getCacheDir()) + newImg as string : this.state.image,
+      image_history: [...this.state.image_history, newImg as string],
+    })
   }
 
   render() {
     return (
-      <img draggable={false} src={convertFileSrc(this.props.image) || ''} />
+      <img className={this.state.cropLoading ? 'loading' : ''} draggable={false} src={convertFileSrc(this.state.image) || ''} />
     )
   }
 }
