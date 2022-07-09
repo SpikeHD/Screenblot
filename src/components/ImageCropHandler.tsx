@@ -1,6 +1,7 @@
-import { invoke } from '@tauri-apps/api'
+import { invoke, window } from '@tauri-apps/api'
 import { cacheDir } from '@tauri-apps/api/path'
 import { convertFileSrc } from '@tauri-apps/api/tauri';
+import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact'
 import { getCacheDir } from '../util/cache';
 import { registerCtrlZ } from '../util/keycombos';
@@ -25,7 +26,10 @@ interface IState {
   }
   cropLoading: boolean
   image: string
-  imageHistory: string[]
+  imageHistory: {
+    image: string,
+    size: window.LogicalSize
+  }[]
 }
 
 export default class ImageCropHandler extends Component<IProps, IState> {
@@ -46,7 +50,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
       },
       cropLoading: false,
       image: props.image,
-      imageHistory: [ ImageCropHandler.getImageFilename(props.image) ],
+      imageHistory: [],
     }
 
     // Create some drag-selection event handlers
@@ -69,7 +73,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
             y: 0,
           },
         },
-      }, () => console.log(this.state))
+      })
 
       // Create a div element that will be resized based on mouse position
       const div = document.createElement('div')
@@ -100,7 +104,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
             y: e.clientY - rect.top,
           },
         },
-      }, () => console.log(this.state))
+      })
 
       // Flash the selection element background for 0.1 seconds, then remove
       const div = document.getElementById('DragSelection')
@@ -137,20 +141,28 @@ export default class ImageCropHandler extends Component<IProps, IState> {
     // Create undo handler
     registerCtrlZ(document, async () => {
       if (this.state.imageHistory.length > 0) {
-        console.log('Setting state')
-  
-        this.state.imageHistory.pop()
+        const oldImg = this.state.imageHistory.pop()
+        const newCurImg = this.state.imageHistory[this.state.imageHistory.length - 1]
 
         this.setState({
-          image: (await getCacheDir()) + this.state.imageHistory[this.state.imageHistory.length - 1],
+          image: (await getCacheDir()) + newCurImg.image,
           imageHistory: this.state.imageHistory,
         })
+
+        if (oldImg) appWindow.setSize(oldImg.size)
       }
     })
+  }
 
-    setInterval(() => {
-      console.log(this.state)
-    }, 1000)
+  async componentDidMount() {
+    this.setState({
+      imageHistory: [
+        {
+          image: ImageCropHandler.getImageFilename(this.props.image),
+          size: await appWindow.innerSize()
+        }
+      ]
+    })
   }
 
   static getImageFilename(path: string) {
@@ -210,8 +222,16 @@ export default class ImageCropHandler extends Component<IProps, IState> {
     this.setState({
       cropLoading: false,
       image: newImg as string !== '' ? (await getCacheDir()) + newImg as string : this.state.image,
-      imageHistory: [...this.state.imageHistory, newImg as string],
+      imageHistory: [...this.state.imageHistory, {
+        image: newImg as string,
+        size: await appWindow.innerSize()
+      }],
     })
+
+    // Adjust window size to fit the image
+    appWindow.setSize(
+      new window.LogicalSize(selectionWidth * 1.2, selectionHeight * 1.2),
+    )
   }
 
   render() {
