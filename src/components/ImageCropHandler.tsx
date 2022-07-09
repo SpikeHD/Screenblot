@@ -230,7 +230,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
 
     // Adjust window size to fit the image
     appWindow.setSize(
-      new window.LogicalSize(selectionWidth * 1.2, selectionHeight * 1.2),
+      new window.LogicalSize(selectionWidth * 2, (selectionHeight + 24) * 2),
     )
   }
 
