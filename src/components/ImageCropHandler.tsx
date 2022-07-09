@@ -1,3 +1,6 @@
+import { invoke } from '@tauri-apps/api'
+import { cacheDir } from '@tauri-apps/api/path'
+import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { Component } from 'preact'
 
 import './ImageCropHandler.css'
@@ -100,6 +103,9 @@ export default class ImageCropHandler extends Component<IProps, IState> {
         setTimeout(() => {
           div.remove()
         }, 100)
+
+        // Save the cropped image
+        this.saveImageInSelection()
       }
     }
 
@@ -121,9 +127,49 @@ export default class ImageCropHandler extends Component<IProps, IState> {
     }
   }
 
+  async saveImageInSelection() {
+    const { start, end } = this.state.selection
+    const { image } = this.props
+
+    // Get img element calculated size and actual size to get ratio
+    const img = document.querySelector('.ImagePreview img') as HTMLImageElement
+    const imgWidth = img.naturalWidth
+    const imgHeight = img.naturalHeight
+    const imgActualWidth = img.width
+    const imgActualHeight = img.height
+
+    // Get selection size and actual size to get ratio
+    const selection = document.getElementById('DragSelection') as HTMLDivElement
+
+    // Calculate the ratio of the selection to the image
+    const ratio = {
+      x: imgWidth / imgActualWidth,
+      y: imgHeight / imgActualHeight
+    }
+
+    // Calculate the selection size in pixels
+    const selectionWidth = selection.offsetWidth * ratio.x
+    const selectionHeight = selection.offsetHeight * ratio.y
+
+    // Calculate the selection start and end in pixels
+    const selectionStartX = start.x * ratio.x
+    const selectionStartY = start.y * ratio.y
+
+    await invoke('save_crop', {
+      path: await cacheDir(),
+      imageName: image, 
+      x: Math.round(selectionStartX),
+      y: Math.round(selectionStartY),
+      width: Math.round(selectionWidth),
+      height: Math.round(selectionHeight),
+    })
+
+    console.log('Saved crop!')
+  }
+
   render() {
     return (
-      <img draggable={false} src={this.props.image || ''} />
+      <img draggable={false} src={convertFileSrc(this.props.image) || ''} />
     )
   }
 }

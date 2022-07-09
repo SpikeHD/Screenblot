@@ -1,6 +1,5 @@
 import { window } from '@tauri-apps/api';
 import { listen } from '@tauri-apps/api/event'
-import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { appWindow } from '@tauri-apps/api/window';
 import { Component } from 'preact'
 import { getCacheDir } from '../util/cache';
@@ -36,7 +35,7 @@ export default class ImagePreview extends Component<{}, IState> {
       const dir = await getCacheDir()
 
       this.setState({
-        image: convertFileSrc(dir + payload as string),
+        image: dir + payload,
         loading: false,
         error: null,
       })
@@ -51,8 +50,6 @@ export default class ImagePreview extends Component<{}, IState> {
 
   async setWindowAndImageSize() {
     const winSize = (await window.currentMonitor())?.size
-
-    console.log(winSize)
 
     if (winSize) {
       // Reduce the size we are about to set the window

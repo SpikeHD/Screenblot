@@ -21,6 +21,7 @@ tauri = { version = "1.0.2", features = ["api-all"] }
 screenshots = "0.3.1"
 rand = "0.8.5"
 device_query = "1.1.1"
+image = "0.24.2"
 
 [features]
 # by default Tauri runs in production mode
