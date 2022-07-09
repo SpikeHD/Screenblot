@@ -3,6 +3,7 @@ import { cacheDir } from '@tauri-apps/api/path'
 import { convertFileSrc } from '@tauri-apps/api/tauri';
 import { Component } from 'preact'
 import { getCacheDir } from '../util/cache';
+import { registerCtrlZ } from '../util/keycombos';
 
 import './ImageCropHandler.css'
 
@@ -24,7 +25,7 @@ interface IState {
   }
   cropLoading: boolean
   image: string
-  image_history: string[]
+  imageHistory: string[]
 }
 
 export default class ImageCropHandler extends Component<IProps, IState> {
@@ -45,7 +46,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
       },
       cropLoading: false,
       image: props.image,
-      image_history: [],
+      imageHistory: [ ImageCropHandler.getImageFilename(props.image) ],
     }
 
     // Create some drag-selection event handlers
@@ -132,6 +133,36 @@ export default class ImageCropHandler extends Component<IProps, IState> {
         div.style.height = `${e.clientY - rect.top - this.state.selection.start.y}px`
       }
     }
+
+    // Create undo handler
+    registerCtrlZ(document, async () => {
+      if (this.state.imageHistory.length > 0) {
+        console.log('Setting state')
+  
+        this.state.imageHistory.pop()
+
+        this.setState({
+          image: (await getCacheDir()) + this.state.imageHistory[this.state.imageHistory.length - 1],
+          imageHistory: this.state.imageHistory,
+        })
+      }
+    })
+
+    setInterval(() => {
+      console.log(this.state)
+    }, 1000)
+  }
+
+  static getImageFilename(path: string) {
+    const image = path.replace(/\\/g, '/').split('/').pop() || ''
+    return image
+  }
+
+  componentWillUnmount() {
+    // Remove all event handlers
+    document.body.onmousedown = null
+    document.body.onmouseup = null
+    document.body.onmousemove = null
   }
 
   async saveImageInSelection() {
@@ -179,7 +210,7 @@ export default class ImageCropHandler extends Component<IProps, IState> {
     this.setState({
       cropLoading: false,
       image: newImg as string !== '' ? (await getCacheDir()) + newImg as string : this.state.image,
-      image_history: [...this.state.image_history, newImg as string],
+      imageHistory: [...this.state.imageHistory, newImg as string],
     })
   }
 
